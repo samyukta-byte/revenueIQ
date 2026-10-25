@@ -10,27 +10,28 @@ RevenueIQ analyzes historical retail transactions, identifies unusual weekly rev
 - **Data cleaning:** Duplicate analysis, transaction filtering, and weekly revenue aggregation.
 - **Revenue dashboard:** Interactive weekly trends and key metrics.
 - **Anomaly detection:** Standard z-score and robust modified z-score comparison.
-- **Transaction investigation:** Drill down into suspicious revenue spikes using product and invoice details.
-- **Revenue forecasting:** Compare a training-mean baseline with exponential smoothing.
-- **Rolling-origin validation:** Evaluate models across four chronological test windows.
+- **Transaction investigation:** Investigate unusual weekly revenue using product, invoice, and transaction-quality summaries.
+- **Revenue forecasting:** Compare seasonal-naive, naive, training-mean, and exponential-smoothing models.
+- **Rolling-origin validation:** Compare forecasting methods across four chronological test windows, with 48 total predictions per model.
+- **Data validation:** Check transaction cleaning, weekly aggregation, and forecast reconciliation.
 - **Interactive visualization:** Explore results through Streamlit and Plotly.
 
 ## Tech Stack
 
-Python · Pandas · NumPy · Scikit-learn · Statsmodels · Plotly · Streamlit
+Python | Pandas | NumPy | Scikit-learn | Statsmodels | Plotly | Streamlit
 
 ## Model Evaluation
 
-On the current dataset, rolling-origin validation produced these results:
+Rolling-origin validation across four chronological test windows produced the following mean fold errors:
 
-| Model | MAE | RMSE |
+| Model | Mean fold MAE | Mean fold RMSE |
 |---|---:|---:|
-| Training-mean baseline | 60,598.50 | 87,462.27 |
-| Exponential smoothing | 55,948.22 | 74,320.60 |
+| Seasonal naive | 34,883.89 | 45,898.23 |
+| Naive | 50,976.29 | 63,137.07 |
+| Exponential smoothing | 55,948.22 | 67,980.63 |
+| Training-mean baseline | 60,598.50 | 69,223.08 |
 
-Exponential smoothing reduced MAE by **7.67%** across 48 predictions from four chronological test windows.
-
-These metrics describe this evaluation dataset and are not a guarantee of future performance.
+Seasonal naive performed best among these four methods on this evaluation setup. It forecasts each week using the value from 52 weeks earlier. These metrics describe this historical dataset and are not a guarantee of future performance.
 
 ## Dataset
 
@@ -53,7 +54,12 @@ python src/data/clean_data.py
 python src/data/build_revenue_series.py
 python src/anomaly/compare_anomaly_methods.py
 python src/forecasting/forecast_revenue.py
+python src/forecasting/compare_forecast_models.py
 python src/forecasting/generate_future_forecast.py
+python src/data/build_transaction_investigation.py
+python src/data/validate_revenue_pipeline.py
+python src/forecasting/validate_forecasting_results.py
+python -m pytest tests/ -v
 streamlit run app.py
 ```
 
@@ -64,10 +70,9 @@ Open the local URL shown in your terminal.
 - Positive-sale candidate value is not verified net revenue.
 - The current dataset contains 106 weekly observations.
 - The rolling evaluation uses four non-overlapping test windows.
-- The current forecasting model does not include seasonality or prediction intervals.
-- Anomaly flags indicate unusual observations; they do not prove fraud or data errors.
-- Transaction-level investigation currently uses a limited saved subset.
+- The seasonal-naive forecast repeats values from 52 weeks earlier and does not provide prediction intervals.
+- Anomaly flags and unusually large transactions are investigation signals, not proof of fraud or errors.
 
 ## Project Status
 
-An exploratory data science portfolio project. Further work includes expanding transaction investigation, adding automated tests, and improving forecast uncertainty estimates.
+An exploratory data science portfolio project. Further work includes reconciling returns and cancellations into net revenue and improving forecast uncertainty estimates.
